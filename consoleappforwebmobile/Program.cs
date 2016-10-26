@@ -12,14 +12,13 @@ namespace consoleappforwebmobile
         private static string serverurl = "/mobile/publicationUpd/index"; //"/mobile/Areas/Manage/RunConfigUpdate.aspx";
         private static System.Timers.Timer timer;
         private static string timeoverserver = "";
-        private static int i = 0;
+      //  private static int i = 0;
         private static long requesttimes = 0;
         private static int continuetime = 3;//持续时间，分钟
         private static DateTime dt;
         private static string paramvalue ="";
         private static bool secondsync = true;
         private static Object firstlock = new Object();
-        private static Object first = new Object();
         static void Main(string[] args)
         {
             paramvalue = "12";
@@ -171,7 +170,7 @@ namespace consoleappforwebmobile
 
         private static void OnSecondTimedEvent(Object source, ElapsedEventArgs e)
         {
-            lock (first)
+            lock (firstlock)
             {
                 if (secondsync)
                 {
