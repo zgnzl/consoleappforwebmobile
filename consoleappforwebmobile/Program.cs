@@ -18,7 +18,9 @@ namespace consoleappforwebmobile
         private static DateTime dt;
         private static string paramvalue ="";
         private static bool secondsync = true;
-        private static Object firstlock = new Object();
+        private static double repeatspantime = 20000;//首次超时，重复请求间隔
+        private static double lastspantime = 90000;//最后一次请求距离上次请求间隔，小时
+        private static Object thisLock = new Object();
         static void Main(string[] args)
         {
             paramvalue = "12";
@@ -28,7 +30,7 @@ namespace consoleappforwebmobile
                 Console.WriteLine("主函数调用结束！");
                 if (!string.IsNullOrWhiteSpace(timeoverserver))
                 {
-                    SetTimer(20000);
+                    SetTimer(repeatspantime);
                 }
                
             }else
@@ -103,7 +105,7 @@ namespace consoleappforwebmobile
 
         private static void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
-            lock (firstlock)
+            lock (thisLock)
             {
                 if (dt < DateTime.Now)
             {
@@ -111,7 +113,7 @@ namespace consoleappforwebmobile
                     timer.Elapsed -= OnTimedEvent;
                     requesttimes = 0;
                     timeoverserver = GetValueByLog();
-                    timer.Interval = 90000;
+                    timer.Interval = lastspantime;
                     timer.Elapsed += OnSecondTimedEvent;
                     Console.WriteLine("_____________________________________________");
                     Console.WriteLine("第二次重复请求"+ timer.Interval/1000 + "秒后开始!" + DateTime.Now);
@@ -127,7 +129,7 @@ namespace consoleappforwebmobile
         {
             if (!string.IsNullOrWhiteSpace(timeoverserver))
             {
-                StreamWriter sw = new StreamWriter(@"E:\TeamFondationServers\consoleappforwebmobile\consoleappforwebmobile\sycnlog.txt", false, Encoding.GetEncoding("GB2312"));
+                StreamWriter sw = new StreamWriter(@"E:\TeamFondationServers\consoleappforwebmobile\consoleappforwebmobile\synctimeoutlog.txt", false, Encoding.GetEncoding("GB2312"));
                 foreach (string ip in timeoverserver.Split(new char[] { ';', '；' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     sw.WriteLine(DateTime.Now+"::"+ip+"::"+ serverurl+"::"+ paramvalue);
@@ -149,7 +151,7 @@ namespace consoleappforwebmobile
         private static string GetValueByLog()
         {
             StringBuilder sb = new StringBuilder();
-            StreamReader sr = new StreamReader(@"E:\TeamFondationServers\consoleappforwebmobile\consoleappforwebmobile\sycnlog.txt", Encoding.GetEncoding("GB2312"));
+            StreamReader sr = new StreamReader(@"E:\TeamFondationServers\consoleappforwebmobile\consoleappforwebmobile\synctimeoutlog.txt", Encoding.GetEncoding("GB2312"));
             string value = sr.ReadLine();
             bool first = true;
             while (!string.IsNullOrEmpty(value))
@@ -170,12 +172,12 @@ namespace consoleappforwebmobile
 
         private static void OnSecondTimedEvent(Object source, ElapsedEventArgs e)
         {
-            lock (firstlock)
+            lock (thisLock)
             {
                 if (secondsync)
                 {
                     secondsync = false;
-                    timer.Interval = 20000;
+                    timer.Interval = repeatspantime;
                     dt = DateTime.Now.AddMinutes(continuetime);
                 }
                 if (dt < DateTime.Now)
@@ -196,7 +198,7 @@ namespace consoleappforwebmobile
         {
             if (!string.IsNullOrWhiteSpace(timeoverserver))
             {
-                StreamWriter sw = new StreamWriter(@"E:\TeamFondationServers\consoleappforwebmobile\consoleappforwebmobile\syncforeverlog.txt", true, Encoding.GetEncoding("GB2312"));
+                StreamWriter sw = new StreamWriter(@"E:\TeamFondationServers\consoleappforwebmobile\consoleappforwebmobile\syncforeveroverlog.txt", true, Encoding.GetEncoding("GB2312"));
                 foreach (string ip in timeoverserver.Split(new char[] { ';', '；' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     sw.WriteLine(DateTime.Now + "::" + ip + "::" + serverurl + "::" + paramvalue);
