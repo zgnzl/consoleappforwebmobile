@@ -8,18 +8,18 @@ namespace consoleappforwebmobile
 {
     class Program
     {
-        private static string serversip = "192.168.20.55;192.168.22.137;";
+        private static string serversip = "192.168.20.55;";
         private static string serverurl = "/mobile/publicationUpd/index"; //"/mobile/Areas/Manage/RunConfigUpdate.aspx";
         private static System.Timers.Timer timer;
         private static string timeoverserver = "";
       //  private static int i = 0;
         private static long requesttimes = 0;
-        private static int continuetime = 3;//持续时间，分钟
+        private static int continuetime = 1;//持续时间，分钟
         private static DateTime dt;
         private static string paramvalue ="";
         private static bool secondsync = true;
         private static double repeatspantime = 20000;//首次超时，重复请求间隔
-        private static double lastspantime = 90000;//最后一次请求距离上次请求间隔，小时
+        private static double lastspantime = 30000;//最后一次请求距离上次请求间隔，小时
         private static Object thisLock = new Object();
         static void Main(string[] args)
         {
@@ -74,7 +74,7 @@ namespace consoleappforwebmobile
             else
             {
                 timer.Stop();
-                Console.WriteLine("全部成功！");
+                Console.WriteLine("全部成功,请求结束！");
             }
         }
 
@@ -109,7 +109,8 @@ namespace consoleappforwebmobile
             {
                 if (dt < DateTime.Now)
             {
-                  Console.WriteLine("请求结束!" + DateTime.Now);
+                    SyncLog();
+                    Console.WriteLine("请求结束!" + DateTime.Now);
                     timer.Elapsed -= OnTimedEvent;
                     requesttimes = 0;
                     timeoverserver = GetValueByLog();
@@ -117,7 +118,7 @@ namespace consoleappforwebmobile
                     timer.Elapsed += OnSecondTimedEvent;
                     Console.WriteLine("_____________________________________________");
                     Console.WriteLine("第二次重复请求"+ timer.Interval/1000 + "秒后开始!" + DateTime.Now);
-                    SyncLog();
+                    
                 }
                 else
             {
